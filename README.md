@@ -27,7 +27,7 @@
 * Statsmodels (시계열 분석)
 
 ## 데이터 출처
-* [Dacon] 온라인 채널 제품 판매량 예측 AI 온/오프라인 해커톤
+* [[Dacon] 온라인 채널 제품 판매량 예측 AI 온/오프라인 해커톤](https://dacon.io/competitions/official/236129/overview/description)
 
 ## 파일 구조
 - `3.1.R`: 제품 특성 측면(1) - 월별 주요 제품 특성 파악 (텍스트마이닝 & 주요 키워드 빈도 분석)
