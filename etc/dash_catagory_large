@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>상품군별 월별 매출 분석 2022</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --border: #e4e2da;
+    --text-primary: #1a1917;
+    --text-secondary: #6b6963;
+    --blue: #185FA5;
+    --teal: #1D9E75;
+    --coral: #D85A30;
+    --amber: #BA7517;
+    --gray: #888780;
+    --accent: #185FA5;
+  }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    padding: 2.5rem 1.5rem;
+    max-width: 900px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  header {
+    border-bottom: 2px solid var(--text-primary);
+    padding-bottom: 1.25rem;
+    margin-bottom: 2rem;
+  }
+
+  .tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-secondary);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.25rem;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+
+  .hypothesis {
+    background: var(--text-primary);
+    color: #fff;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 2rem;
+    font-size: 14px;
+  }
+
+  .hypothesis .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    opacity: 0.6;
+    margin-bottom: 4px;
+  }
+
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 2rem;
+  }
+
+  .metric {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+  }
+
+  .metric .label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+
+  .metric .value {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--accent);
+  }
+
+  .metric .desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+
+  .section {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.04em;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 1rem;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .legend span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .chart-wrap {
+    position: relative;
+    width: 100%;
+  }
+
+  .insight-box {
+    background: #EBF3FC;
+    border-left: 3px solid var(--blue);
+    border-radius: 0 6px 6px 0;
+    padding: 0.875rem 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 14px;
+    color: #0C447C;
+    line-height: 1.6;
+  }
+
+  .pareto-bar {
+    margin-top: 1rem;
+  }
+
+  .pareto-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+
+  .pareto-label {
+    width: 120px;
+    flex-shrink: 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  .pareto-track {
+    flex: 1;
+    background: #f0ede6;
+    border-radius: 3px;
+    height: 22px;
+    overflow: hidden;
+  }
+
+  .pareto-fill {
+    height: 100%;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    padding-left: 8px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #fff;
+    font-family: 'IBM Plex Mono', monospace;
+    transition: width 1s ease;
+  }
+
+  .pareto-pct {
+    width: 48px;
+    text-align: right;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  footer {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 0.5px solid var(--border);
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="tag">E-commerce Sales Analysis · 2022</p>
+  <h1>상품군별 월별 매출 실적 및 추이 파악</h1>
+  <p class="subtitle">분석 기간: 2022.01.01 ~ 2022.12.31 · 대상: 이커머스 온라인 쇼핑몰 일별 판매 데이터</p>
+</header>
+
+<div class="hypothesis">
+  <div class="label">HYPOTHESIS</div>
+  전체 매출의 대부분은 소수의 대분류 상품군에서 발생할 것이다 (파레토 법칙)
+</div>
+
+<div class="metrics">
+  <div class="metric">
+    <div class="label">연간 총매출 1위</div>
+    <div class="value">62.3%</div>
+    <div class="desc">B002-C001-0001 단독 점유</div>
+  </div>
+  <div class="metric">
+    <div class="label">상위 2개 누적 비중</div>
+    <div class="value">96.2%</div>
+    <div class="desc">나머지 3개 합산 3.8%</div>
+  </div>
+  <div class="metric">
+    <div class="label">월별 1위 변동</div>
+    <div class="value">없음</div>
+    <div class="desc">12개월 내내 순위 고정</div>
+  </div>
+</div>
+
+<div class="insight-box">
+  2022년 전체 매출의 96.2%가 상위 2개 대분류에 집중되어 있으며, 이는 파레토 법칙(80:20)을 크게 상회하는 극단적 매출 집중 구조다. 가설은 강하게 채택된다.
+</div>
+
+<div class="section">
+  <div class="section-title">01 · 대분류별 연간 매출 비중</div>
+  <div class="pareto-bar" id="paretoBar"></div>
+</div>
+
+<div class="section">
+  <div class="section-title">02 · 월별 대분류별 매출 추이 (단위: 억원)</div>
+  <div class="legend">
+    <span><span class="legend-dot" style="background:#185FA5;"></span>0001 (1위)</span>
+    <span><span class="legend-dot" style="background:#1D9E75;"></span>0002 (2위)</span>
+    <span><span class="legend-dot" style="background:#D85A30;"></span>0003</span>
+    <span><span class="legend-dot" style="background:#BA7517;"></span>0005</span>
+    <span><span class="legend-dot" style="background:#888780;"></span>0004</span>
+  </div>
+  <div class="chart-wrap" style="height: 300px;">
+    <canvas id="lineChart" role="img" aria-label="월별 5개 대분류 매출 추이 꺾은선 그래프">월별 대분류별 매출 추이</canvas>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">03 · 월별 매출 구성 비중</div>
+  <div class="chart-wrap" style="height: 260px;">
+    <canvas id="stackedChart" role="img" aria-label="월별 누적 막대 그래프">월별 매출 구성 비중</canvas>
+  </div>
+</div>
+
+<footer>
+  데이터 출처: product_sales, product_amount, product_info · PostgreSQL · Python pandas
+</footer>
+
+<script>
+const months = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+
+const raw = {
+  '0001': [34621620910,31643535930,40722307960,39382650250,40894059450,39927701790,40450846920,41419386690,38726365370,35230802300,35177528140,35728811180],
+  '0002': [13388348750,15667338150,21346292960,19991288980,20713461920,23327062350,24102271910,24046895050,19096345190,20960237310,20115557870,24197716440],
+  '0003': [48277520,811846830,1838166330,1692300920,1769368840,1866394380,2387108960,2294030630,1836658680,1986140560,1758645620,1746126250],
+  '0005': [260650920,320266700,545877710,525456150,531752260,572127230,725209790,683501610,595530450,639950650,572015310,632419220],
+  '0004': [4625530,10014700,47327800,243326230,325783120,300204180,178970760,55426950,28734650,23519960,17638510,10915500],
+};
+
+const colors = { '0001':'#185FA5','0002':'#1D9E75','0003':'#D85A30','0005':'#BA7517','0004':'#888780' };
+const dashes = { '0001':[],'0002':[6,3],'0003':[3,3],'0005':[8,4,2,4],'0004':[2,2] };
+const toEok = arr => arr.map(v => Math.round(v / 100000000 * 10) / 10);
+
+const totals = Object.entries(raw).map(([k, v]) => ({
+  key: k,
+  total: v.reduce((a,b) => a+b, 0),
+  color: colors[k]
+})).sort((a,b) => b.total - a.total);
+
+const grandTotal = totals.reduce((a,b) => a + b.total, 0);
+
+const paretoBar = document.getElementById('paretoBar');
+totals.forEach(item => {
+  const pct = (item.total / grandTotal * 100).toFixed(2);
+  const row = document.createElement('div');
+  row.className = 'pareto-row';
+  row.innerHTML = `
+    <div class="pareto-label">B002-C001-${item.key}</div>
+    <div class="pareto-track">
+      <div class="pareto-fill" style="width:${pct}%; background:${item.color};">${pct > 5 ? pct + '%' : ''}</div>
+    </div>
+    <div class="pareto-pct">${pct}%</div>
+  `;
+  paretoBar.appendChild(row);
+});
+
+new Chart(document.getElementById('lineChart'), {
+  type: 'line',
+  data: {
+    labels: months,
+    datasets: Object.entries(raw).map(([k, v]) => ({
+      label: k,
+      data: toEok(v),
+      borderColor: colors[k],
+      borderDash: dashes[k],
+      borderWidth: 2,
+      pointRadius: 3,
+      tension: 0.3,
+      fill: false,
+      backgroundColor: colors[k] + '22',
+    }))
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { autoSkip: false, font: { size: 11 } } },
+      y: { ticks: { callback: v => v + '억', font: { size: 11 } } }
+    }
+  }
+});
+
+new Chart(document.getElementById('stackedChart'), {
+  type: 'bar',
+  data: {
+    labels: months,
+    datasets: Object.entries(raw).map(([k, v]) => ({
+      label: k,
+      data: toEok(v),
+      backgroundColor: colors[k],
+      borderWidth: 0,
+    }))
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { stacked: true, ticks: { autoSkip: false, font: { size: 11 } } },
+      y: { stacked: true, ticks: { callback: v => v + '억', font: { size: 11 } } }
+    }
+  }
+});
+</script>
+</body>
+</html>
